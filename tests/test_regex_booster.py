@@ -6,30 +6,30 @@ from dc_custom_component.custom_components.rankers.regex_booster import RegexBoo
 
 # Unit Tests
 
-def test_regex_booster_initialization():
+def test_regex_booster_initialization() -> None:
     booster = RegexBooster({"pattern": 1.5})
     assert len(booster.regex_boosts) == 1
     assert list(booster.regex_boosts.values())[0] == 1.5
 
-def test_regex_booster_case_insensitivity():
+def test_regex_booster_case_insensitivity() -> None:
     booster = RegexBooster({r"\bPython\b": 1.5})
     doc = Document(content="python is great", score=1.0)
     result = booster.run(documents=[doc])
     assert result["documents"][0].score == 1.5
 
-def test_regex_booster_multiple_patterns():
+def test_regex_booster_multiple_patterns() -> None:
     booster = RegexBooster({r"\bPython\b": 1.5, r"\bgreat\b": 1.2})
     doc = Document(content="Python is great", score=1.0)
     result = booster.run(documents=[doc])
     assert result["documents"][0].score == 1.5 * 1.2
 
-def test_regex_booster_no_match():
+def test_regex_booster_no_match() -> None:
     booster = RegexBooster({r"\bJava\b": 1.5})
     doc = Document(content="Python is great", score=1.0)
     result = booster.run(documents=[doc])
     assert result["documents"][0].score == 1.0
 
-def test_regex_booster_sorting():
+def test_regex_booster_sorting() -> None:
     booster = RegexBooster({r"\bPython\b": 1.5, r"\bJava\b": 1.2})
     docs = [
         Document(content="Java is okay", score=1.0),
@@ -39,7 +39,7 @@ def test_regex_booster_sorting():
     result = booster.run(documents=docs)
     assert [doc.content for doc in result["documents"]] == ["Python is great", "Java is okay", "C++ is fast"]
 
-def test_regex_booster_no_score():
+def test_regex_booster_no_score() -> None:
     booster = RegexBooster({r"\bPython\b": 1.5})
     doc = Document(content="Python is great")
     result = booster.run(documents=[doc])
@@ -59,7 +59,7 @@ class MockRetriever:
         return {"documents": docs}
 
 @pytest.fixture
-def regex_pipeline():
+def regex_pipeline() -> Pipeline:
     retriever = MockRetriever()
     regex_booster = RegexBooster({r"\bPython\b": 1.5, r"\bAI\b": 1.3})
     joiner = DocumentJoiner()
@@ -74,7 +74,7 @@ def regex_pipeline():
     
     return pipeline
 
-def test_regex_booster_in_pipeline(regex_pipeline):
+def test_regex_booster_in_pipeline(regex_pipeline: Pipeline) -> None:
     results = regex_pipeline.run(data={"query": "programming languages"})
     documents = results["joiner"]["documents"]
     
@@ -86,7 +86,7 @@ def test_regex_booster_in_pipeline(regex_pipeline):
     assert documents[2].content == "Machine learning is a subset of AI"
     assert pytest.approx(documents[2].score, 0.01) == 0.5 * 1.3
 
-def test_regex_booster_pipeline_no_matches():
+def test_regex_booster_pipeline_no_matches() -> None:
     @component
     class NoMatchRetriever:
         @component.output_types(documents=List[Document])
